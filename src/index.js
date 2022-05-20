@@ -1,15 +1,13 @@
 import "./sass/main.scss";
+import SimpleLightbox from 'simplelightbox';
 import Notiflix from "notiflix";
 import "simplelightbox/dist/simple-lightbox.min.css";
+import card from './card.hbs';
 import {
   fetchGallery,
-  incrementPage,
-  page,
-  resetPage,
-} from "./services/api-service";
+  fetchParams,
+} from "./services/api-service.js";
 
-const perPage = 40;
-let inputText = "";
 
 const refs = {
   form: document.querySelector("#search-form"),
@@ -19,6 +17,9 @@ const refs = {
   loadMore: document.querySelector(".load-more"),
 };
 
+const incrementPage = () => (fetchParams.page += 1);
+ const resetPage = () => (fetchParams.page = 1);
+
 const addBtn = () => {
   refs.loadMore.classList.remove("visually-hidden");
 };
@@ -27,43 +28,51 @@ const removeBtn = () => {
 };
 
 removeBtn();
-function getImages(e) {
+
+let ligthbox = null;
+const getImages = e => {
   e.preventDefault();
-  resetPage();
-  clearCardList();
-  inputText = refs.input.value.trim();
-  if (!e.target.tagName === "BUTTON") return;
-  if (inputText.length === 0) {
+   resetPage();
+   clearCardList();
+   if (!refs.input.value) {
     Notiflix.Notify.failure(
-      "Sorry, there are no images matching your search query. Please try again."
+      'Sorry, there are no images matching your search query. Please try again.',
     );
-    return removeBtn();
+
+    return;
   }
-  fetchGallery(inputText)
-    .then(({ hits, total, totalHits }) => {
-      createImagesMarkup(hits);
-      let pageValue = total / perPage;
+
+  fetchParams.page = 1;
+ fetchParams.q = refs.input.value.trim();
+  fetchGallery(fetchParams)
+    .then(data => {
+      createImagesMarkup(data.hits);
+     ligthbox = new SimpleLightbox('.gallery a', {
+    captionsData: 'alt',
+    animationSpeed: 210,
+    fadeSpeed: 210,
+        });
+      let pageValue = data.total / fetchParams.per_page;
+      incrementPage();
       addBtn();
-      if (total === 0) {
+ Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+      
+      if (data.total === 0) {
         Notiflix.Notify.failure(
           "Sorry, there are no images matching your search query. Please try again."
         );
         return removeBtn();
       }
-      if (page >= pageValue) {
+      if (fetchParams.page >= pageValue) {
         Notiflix.Notify.info(
-          "We're sorry, but you've reached the end of search results."
-        );
+          "We're sorry, but you've reached the end of search results.");
         return removeBtn();
       }
-      Notiflix.Notify.success(`Hooray! We found ${totalHits} images.`);
-      incrementPage();
-    })
-    .catch((error) => {
+    }).catch((error) => {
       Notiflix.Notify.failure(error.message);
     });
 }
-
+ 
 refs.form.addEventListener("submit", getImages);
 refs.loadMore.addEventListener("click", loadImages);
 
@@ -72,12 +81,12 @@ function clearCardList() {
 }
 
 function loadImages() {
-  fetchGallery(inputText)
-    .then(({ hits, total, totalHits }) => {
-      let pageValue = total / perPage;
-      createImagesMarkup(hits);
+  fetchGallery(fetchParams)
+    .then(data => {
+      let pageValue = data.total /fetchParams.per_page;
+      createImagesMarkup(data.hits);
       incrementPage();
-      if (page >= pageValue) {
+      if (fetchParams.page >= pageValue) {
         removeBtn();
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."
@@ -87,37 +96,12 @@ function loadImages() {
     .catch((error) => {
       Notiflix.Notify.failure(error.message);
     });
+
 }
 
-const createImagesMarkup = (images) => {
-  const markup = images
-    .map(
-      (image) => `
-  <div class="card ">
-    <a href="${image.webformatURL}">
-      <img src="${image.largeImageURL}" width="280" height="220" alt="${image.tags}" loading="lazy"/>
-    </a>
-    <ul class="info-list">
-      <li class="info-item">
-        <h3>Likes</h3>
-        <p>${image.likes}</p>
-      </li>
-      <li class="info-item">
-        <h3>Views</h3>
-        <p>${image.views}</p>
-      </li>
-      <li class="info-item">
-        <h3>Comments</h3>
-        <p>${image.comments}</p>
-      </li>
-      <li class="info-item">
-        <h3>Downloads</h3>
-        <p>${image.downloads}</p>
-      </li>
-    </ul>
-  </div>
-  `
-    )
-    .join("");
+
+function createImagesMarkup (images){
+  const markup = card(images);
   refs.gallery.insertAdjacentHTML("beforeend", markup);
+return markup;
 };

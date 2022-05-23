@@ -4,8 +4,8 @@ import Notiflix from "notiflix";
 import "simplelightbox/dist/simple-lightbox.min.css";
 import card from './card.hbs';
 import {
+  getImgParams,
   fetchGallery,
-  fetchParams,
 } from "./services/api-service.js";
 
 
@@ -17,8 +17,8 @@ const refs = {
   loadMore: document.querySelector(".load-more"),
 };
 
-const incrementPage = () => (fetchParams.page += 1);
- const resetPage = () => (fetchParams.page = 1);
+const incrementPage = () => (getImgParams.page += 1);
+  const resetPage = () => (getImgParams.page = 1);
 
 const addBtn = () => {
   refs.loadMore.classList.remove("visually-hidden");
@@ -32,7 +32,7 @@ removeBtn();
 let ligthbox = null;
 const getImages = e => {
   e.preventDefault();
-   resetPage();
+    resetPage();
    clearCardList();
    if (!refs.input.value) {
     Notiflix.Notify.failure(
@@ -41,10 +41,9 @@ const getImages = e => {
 
     return;
   }
-
-  fetchParams.page = 1;
- fetchParams.q = refs.input.value.trim();
-  fetchGallery(fetchParams)
+   getImgParams.page = 1;
+  getImgParams.q = refs.input.value.trim();
+  fetchGallery(getImgParams)
     .then(data => {
       createImagesMarkup(data.hits);
      ligthbox = new SimpleLightbox('.gallery a', {
@@ -52,18 +51,12 @@ const getImages = e => {
     animationSpeed: 210,
     fadeSpeed: 210,
         });
-      let pageValue = data.total / fetchParams.per_page;
+      let pageValue = data.total / getImgParams.per_page;
       incrementPage();
       addBtn();
- Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
+      Notiflix.Notify.success(`Hooray! We found ${data.totalHits} images.`);
       
-      if (data.total === 0) {
-        Notiflix.Notify.failure(
-          "Sorry, there are no images matching your search query. Please try again."
-        );
-        return removeBtn();
-      }
-      if (fetchParams.page >= pageValue) {
+      if (getImgParams.page >= pageValue) {
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results.");
         return removeBtn();
@@ -81,12 +74,12 @@ function clearCardList() {
 }
 
 function loadImages() {
-  fetchGallery(fetchParams)
+  fetchGallery(getImgParams)
     .then(data => {
-      let pageValue = data.total /fetchParams.per_page;
+      let pageValue = data.total /getImgParams.per_page;
       createImagesMarkup(data.hits);
       incrementPage();
-      if (fetchParams.page >= pageValue) {
+      if (getImgParams.page >= pageValue) {
         removeBtn();
         Notiflix.Notify.info(
           "We're sorry, but you've reached the end of search results."

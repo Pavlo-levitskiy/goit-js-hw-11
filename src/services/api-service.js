@@ -1,13 +1,13 @@
 import axios from "axios";
 
-const customAxios = axios.create({
+const customFetch = axios.create({
   baseURL: "https://pixabay.com/api/",
   params: {
     key: "27487139-e524d10819fee38ea9f4aa544",
   },
 });
 
-export const fetchParams = {
+export const getImgParams = {
   q: "",
   image_type: 'photo',
   orientation: 'horizontal',
@@ -16,12 +16,10 @@ export const fetchParams = {
   page: 1,
 };
 
-
-export const fetchGallery = (params) => {
-  const res = customAxios.get('', { params })
-  if (res.status > 200) {
-    return Promise.reject(new Error(error));
+export async function fetchGallery(params){
+ const res = customFetch.get('', { params })
+  if ((await res).status > 200) {
+  return Promise.reject(e)
   }
-  return response.data;
-};
-
+  return (await res).data;
+}

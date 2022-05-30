@@ -1,14 +1,14 @@
-import axios from "axios";
+import axios from 'axios';
 
 const customFetch = axios.create({
-  baseURL: "https://pixabay.com/api/",
+  baseURL: 'https://pixabay.com/api/',
   params: {
-    key: "27487139-e524d10819fee38ea9f4aa544",
+    key: '27487139-e524d10819fee38ea9f4aa544',
   },
 });
 
 export const getImgParams = {
-  q: "",
+  q: '',
   image_type: 'photo',
   orientation: 'horizontal',
   safesearch: true,
@@ -16,10 +16,10 @@ export const getImgParams = {
   page: 1,
 };
 
-export async function fetchGallery(params){
- const res = customFetch.get('', { params })
-  if ((await res).status > 200) {
-  return Promise.reject(e)
+export async function fetchGallery(params) {
+  const res = await customFetch.get('', { params });
+  if (res.status > 200) {
+    return Promise.reject(e);
   }
-  return (await res).data;
+  return res.data;
 }

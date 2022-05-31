@@ -22,7 +22,11 @@ const addBtn = () => {
 
 refs.loadMore.classList.add('visually-hidden');
 
-let ligthbox = null;
+let ligthbox = new SimpleLightbox('.gallery a', {
+  captionsData: 'alt',
+  animationSpeed: 210,
+  fadeSpeed: 210,
+});
 const getImages = e => {
   e.preventDefault();
   resetPage();
@@ -81,10 +85,6 @@ function loadImages() {
 function createImagesMarkup(images) {
   const markup = card(images);
   refs.gallery.insertAdjacentHTML('beforeend', markup);
-  ligthbox = new SimpleLightbox('.gallery a', {
-    captionsData: 'alt',
-    animationSpeed: 210,
-    fadeSpeed: 210,
-  });
+  ligthbox.refresh();
   return markup;
 }

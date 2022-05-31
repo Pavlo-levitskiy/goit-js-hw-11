@@ -16,10 +16,13 @@ export const getImgParams = {
   page: 1,
 };
 
-export async function fetchGallery(params) {
-  const res = await customFetch.get('', { params });
-  if (res.status > 200) {
-    return Promise.reject(e);
+export const fetchGallery = async params => {
+  try {
+    const { data } = await customFetch.get('', {
+      params: { ...params },
+    });
+    return data;
+  } catch {
+    console.log('message');
   }
-  return res.data;
-}
+};
